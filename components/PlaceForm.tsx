@@ -1,16 +1,37 @@
 import { Colors } from "@/constants/Colors";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import ImagePicker from "./ImagePicker";
 import LocationPicker from "./LocationPicker";
-
-const PlaceForm: React.FC = () => {
+import Button from "./UI/Button";
+import { LocationPickProps, Place } from "@/types";
+import { router } from "expo-router";
+type PlaceFormProps = {
+  onCreatePlace: (place: Place) => void;
+};
+const PlaceForm: React.FC<PlaceFormProps> = ({ onCreatePlace }) => {
   const [enteredTitle, setEnteredTitle] = useState<string>("");
-
+  const [selectedImage, setSelectedImage] = useState<string>();
+  const [pickedLocation, setPickedLocation] = useState<LocationPickProps>();
   const changeTitleHandler = (enteredText: string) => {
     setEnteredTitle(enteredText);
   };
 
+  function takeImageHandler(imageUri: string) {
+    setSelectedImage(imageUri);
+  }
+
+  const pickLocationHandler = useCallback((location: LocationPickProps) => {
+    setPickedLocation(location);
+  }, []);
+
+  const savePlaceHandler = () => {
+    const placeData = new Place(enteredTitle, selectedImage!, pickedLocation!);
+    onCreatePlace(placeData);
+  };
+  const GetBackHandler = () => {
+    router.push("/");
+  };
   return (
     <ScrollView style={styles.form}>
       <View>
@@ -21,8 +42,10 @@ const PlaceForm: React.FC = () => {
           value={enteredTitle}
         />
       </View>
-      <ImagePicker />
-      <LocationPicker />
+      <ImagePicker onTakeImage={takeImageHandler} />
+      <LocationPicker onPickLocation={pickLocationHandler} />
+      <Button onPress={savePlaceHandler}>Add Place</Button>
+      <Button onPress={GetBackHandler}>Get Back</Button>
     </ScrollView>
   );
 };
